@@ -81,7 +81,8 @@ issues and details.
 
 # Acknowledgements
 
-GitHub pages of the original contributors. Please refer to them for updates and cite their work.
+GitHub pages of the original contributors: please refer to them for updates and cite their work.
 * [Deeplab: DeepLabeling for Semantic Image Segmentation](https://github.com/tensorflow/models/tree/master/research/deeplab)
 * [Semantic Segmentation on MIT ADE20K dataset in PyTorch](https://github.com/CSAILVision/semantic-segmentation-pytorch)
 * [OCNet: Object Context Network for Scene Parsing](https://github.com/PkuRainBow/OCNet.pytorch)
+* [Semantic Image Synthesis with SPADE](https://github.com/NVlabs/SPADE)
