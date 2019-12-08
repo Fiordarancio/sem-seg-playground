@@ -34,8 +34,8 @@ here and on their original repository pages.
 ## Folder structure
 * **DataMonitor**: MATLAB toolkit including interactive scripts to manage
 datasets. It also allows MATLAB base training on some networks from scratch.
-* **venv, mitenv, ocnenv, spadenv**: virtual environments to handle specific dependencies
-* **models, OCRNet.pytorch, SPADE, semseg_mit**: forked project (see below)
+* **Deeplab, OCRnet, SPADE, Semseg-MIT**: folders with our own modifications of some
+forked project (see below)
 
 The presented models are mainly implemented using Python, Tensorsflow and
 Pytorch. A related virtual environment has been created for each of them: 
@@ -47,12 +47,16 @@ of exporting them at each new activation. For an example, see Deeplab's
 
 ## Dependencies
 
-For any of the listed networks, a `requirements.txt` file is provided in
-order to install python dependencies by simply typing:
+Into our directories we listed some minimal installation requirements you should 
+follow in order to play with these models just as we did, in order to replicate
+our results or master them for your own purposes.
+
+Into the `requirements.txt` file all specific packages (including version) are 
+listed. Download and install them by simply typing:
 ```bash
   $ pip install -r requirements.txt --force-reinstall
 ```
-However, mind that sometimes versions can be conflicting. Exploit virtual 
+Please mind that sometimes versions can be conflicting. Exploit virtual 
 environments to easily apply updates or start over without side effects if
 something went wrong (e.g. when cached or legacy packages issue conflicts
 by leaving unresolved trash).
@@ -65,19 +69,19 @@ to import packages already prepared on your system installation of Python.
 See the [virtualenv](https://virtualenv.pypa.io/en/latest/) documentation for
 issues and details.
 
-## Forked projects
+## Referred projects
 
-* **Deeplabv3+**: forked Tensorflow impletentation under `models/research/deeplab`.
+* **Deeplabv3+**: Tensorflow impletentation under `models/research/deeplab`.
                   *Associated venv:* `venv`. This repo provides a wide range of pretrained
                   model variants to work on all the mentioned datasets
-* **HRNet**: we forked Pytorch MIT CSAIL implementation bundles for some SOTA networks
-             under `semseg_mit`. The repo provides support for PSPNet, UperNet and HRNet
+* **HRNet**: Pytorch MIT CSAIL implementation bundles for some SOTA networks
+             under `Semseg-mit`. The repo provides support for PSPNet, UperNet and HRNet
              basically trained over the ADE20K dataset (as a benchmark). *Associated* 
              *venv:* `mitenv`
-* **OCRNet**: forked Pytorch implementation of the Object-Context-Recognition, which
+* **OCRNet**: Pytorch implementation of the Object-Context-Recognition, which
               claims the top ranking over many datasets in 2019. Details into 
               `OCRNet.pytorch`. *Associated venv:* `ocrnenv`
-* **SPADE**: forked NVIDIA project for a Generative Adversarial Network. *Associated venv:* `spadenv`
+* **SPADE**: NVIDIA project for a Generative Adversarial Network. *Associated venv:* `spadenv`
 
 # Acknowledgements
 
