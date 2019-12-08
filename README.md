@@ -20,22 +20,25 @@ the task of semantic segmentation, applied to many datasets
 [Cityscapes](https://www.cityscapes-dataset.com/) and 
 [COCO](http://cocodataset.org/#home). Folders were 
 forked by original authors, whose work we appreciate and 
-<a href=#Acknowledgements>acknowledge</a>. Actually, the folder `models`
-is directly forked by the [Tensorflow/moldes Github page](https://github.com/tensorflow/models).
-We modified few lines of each of them, due to the the need of 
-generalizing training and test over a our context-specific dataset. 
+<a href=#Acknowledgements>acknowledge</a>. Following the need of 
+generalizing training and test over a our context-specific datasets,
+we modified few things in their code or just followed their istructions.
+
+**We exclusively put in this repository the files we actually modified or 
+added brand new. In each subfolder you will find further guidelines to 
+set up your own environment.**
 
 The code is meant to be modular and reusable, so you should be able to
 try over your own datasets without relevant difficulties just following
 the examples provided in each project. If you find a bug, please report it
 using the [issue tracker](https://github.com/Ilancia/sem-seg-playground/issues) 
-here and on their original repository pages.
+or refer the original repository pages.
 
 ## Folder structure
 * **DataMonitor**: MATLAB toolkit including interactive scripts to manage
 datasets. It also allows MATLAB base training on some networks from scratch.
-* **Deeplab, OCRnet, SPADE, Semseg-MIT**: folders with our own modifications of some
-forked project (see below)
+* **Deeplab, OCRnet, SPADE, Semseg-MIT**: folders with our own modifications of 
+some projects to be forked (see below)
 
 The presented models are mainly implemented using Python, Tensorsflow and
 Pytorch. A related virtual environment has been created for each of them: 
