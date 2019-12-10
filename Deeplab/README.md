@@ -46,6 +46,6 @@ internal feature sizes and strides that resemble the model you are finetuning
 `overlay.py` is a Python utility we provide to easily visualize the overlaid predicted label
 of the results saved into the `exp/<split>/vis/` folder of your experiments. You can save the overlay
 results, and decide how many of them you want to be displayed on the screen. Check:
-```python
+```bash
 $ python overlay.py --help
 ```
