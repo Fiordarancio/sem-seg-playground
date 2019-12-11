@@ -93,3 +93,8 @@ GitHub pages of the original contributors: please refer to them for updates and 
 * [Semantic Segmentation on MIT ADE20K dataset in PyTorch](https://github.com/CSAILVision/semantic-segmentation-pytorch)
 * [OCNet: Object Context Network for Scene Parsing](https://github.com/PkuRainBow/OCNet.pytorch)
 * [Semantic Image Synthesis with SPADE](https://github.com/NVlabs/SPADE)
+
+# Disclaimer
+The so called `motive` or `MoTIVE` dataset is not public yet, since it refers to an
+[on-going project](https://motiverc.wordpress.com/). 
+Therefore, some data redirections could be missing. 
