@@ -56,28 +56,28 @@ tf.app.flags.DEFINE_string(
 # later, into __main__, call _convert_dataset for each split you want to create
    _convert_dataset('train_split', FLAGS.train_images, FLAGS.train_labels)
 ```
-Once the records are built, we need to specify the general information about your dataset. Into `data_generator.py` 
-there is a list of static `DatasetDescriptor` objects. This list will be read by Deeplab when training, evaluating
-or visualizing anything. Information must be consistent. You can define a new element of the list with your values, 
-like in the the following example:
+Once the records are built (by calling `$ python build_mydataset.py`), we need to specify the general information 
+about the dataset. Into `data_generator.py` there is a list of static `DatasetDescriptor` objects. This list will 
+be read by Deeplab when training, evaluating or visualizing anything. Information must be consistent. You can define 
+a new element of the list with your values, like in the the following example:
 ```python
 _MYDATASET_INFORMATION = DatasetDescriptor(
     splits_to_sizes={
-        'train_split': 2975, # number of elements in the folders
-        'eval_split': 500,
+        'train_split': 2975,    # number of elements in the image/label folders 
+        'eval_split': 500,      # related to these splits
     },
     num_classes=19, # classes of your annotations. Here, indexes in labels must have value 0-18
     ignore_label=255, # value of a pixel in annotations that will be ignored while training
 )
 ```
 
-Take care of the `ignore_label` value. If you don't have a background/undefined class, like in the above example,
-it means that all the annotation pixels will be relevant during training. So it should be `ignore_label >= num_classes`.
-This happens with our `guitars` dataset.
+Take care of the `ignore_label` value. If you don't have a background/undefined class, like in the example above,
+it means that all the annotation pixels will be relevant during training. So, put `ignore_label >= num_classes` to
+exclude any value. This happens with our `guitars` dataset.
 
 Besides, if you have a background class and you want to exclude pixels marked with that class from the training, 
-you have to put the correspondent value. For example, there are some 'black' pixels with value `0` marked as 
-`background`, which is indeed the first class: then it should be `ignore_label=0`. This happens with our `motive` dataset.
+you have to put the correspondent value. For example, there could be some 'black' pixels with value `0` marked as 
+`Background`, which is indeed the first class: then it should be `ignore_label=0`. This happens with our `motive` dataset.
 
 # Step 3: launch
 
