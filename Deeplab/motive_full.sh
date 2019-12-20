@@ -1,27 +1,11 @@
 #!/bin/bash
-# Copyright 2018 The TensorFlow Authors All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-
-# This script is used to run local test on Guitars dataset.
+# 2019 Event Lab
+#-------------------------------------------------------------------------------
+# Run training and evaluation of Deeplab of the MoTIVE minidataset.
 #
 # Usage:
 #		# From the tensorflow/models/research/deeplab directory.
-#		sh ./guitar_train.sh [|& tee logs/guitar_train.sh]
-#	
-# If you previously interrupted the training, we suggest to refer to:
-#   guitar_recover_train.sh
+#		sh motive_traineval.sh [ |& tee logs/motive_traineval.txt ]
 #
 # Please note that when passing flags to the following Python scripts, relative
 # strings should change into the file, so be careful in avoiding overwritings.
@@ -34,93 +18,75 @@ set -e
 
 # Move one-level up to tensorflow/models/research directory.
 cd ..
-
 # Set up the working environment.
 CURRENT_DIR=$(pwd) # models/research
 WORK_DIR="${CURRENT_DIR}/deeplab"
 
-## Run model_test first to make sure the PYTHONPATH is correctly set.
-#python "${WORK_DIR}"/model_test.py # -v # this flag arises errors...
-#echo "PYTHONPATH correctly set."
+# Check PYTHONPATH and installed bash version
+echo "Check PYTHONPATH: ${PYTHONPATH}"
 
 # Set the dataset folder: data are ready, no need to download anything
 DATASET_DIR="datasets"
-
 # Go back to original directory.
 cd "${CURRENT_DIR}"
 
 # Check CUDA and cuDNN library path are correctly loaded.
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-10.1/lib64
 echo "Loaded CUDA lybrary: ${LD_LIBRARY_PATH}"
-# export CUDA_VISIBLE_DEVICES in order to select which of our GPUs 
-# must be used. It appears that Deeplab does the indexing by calling
-# 0 the internal GPU, while 1 and 2 Pascal and GeForce respectively.
-export CUDA_VISIBLE_DEVICES="1"
+# Export CUDA_VISIBLE_DEVICES in order to select which of our GPUs must be used.
+# Check the correctness of the index using $ nvidia-smi
+export CUDA_VISIBLE_DEVICES="1" 
 echo "Cuda visible devices = ${CUDA_VISIBLE_DEVICES}"
 echo "(device = 0 : using GeForce; device = 1 : using Quadro)"
 
+# Select the training options.
 # Train iterations: steps of training. Epochs can be extracted this way
 # steps_needed_to_traverse_dataset = dataset_size / batch_size
 # epochs = num_iterations / steps_needed_to_traverse_dataset
-
-# 2019-12-03/04 = 2019-12-07
-NUM_ITERATIONS=40000 # scaling up to 80K
+NUM_ITERATIONS=80000 # scaling up to 80K
 BATCH_SIZE=8
 FINETUNE_BN=False
+# The crop size should be used as resize value only if the size of 
+# your input images are fixed and known, as well as their aspect ratio.
 CROP_SIZE=513
-NUM_CLASSES=2
-#---------------------------------------------------------------------------
-# Legacy.
-# # 2019-11-04/05
-# NUM_ITERATIONS=20000
-# TRAIN_SPLIT="spade_aug_train"
-# CROP_SIZE=256 # 513
-# # 2019-10-25
-# NUM_ITERATIONS=30000
-# CROP_SIZE=513
-# # 2019-10-19 
-# NUM_ITERATIONS=20000
-# # 2019-10-18/19 
-# NUM_ITERATIONS=10000
-# --train-split="trainval_aug"
-# # 2019-10-16/18 
-# NUM_ITERATIONS=20000 
-# --train-split="trainval_aug"
-#---------------------------------------------------------------------------
+TRAIN_CROP_SIZE="${CROP_SIZE}, ${CROP_SIZE}"
+NUM_CLASSES=35
 
 # Set the splits: dataset on which we are working.
-# 2019-12-07
-TRAIN_SPLIT="trainval"
-EVAL_SPLIT="trainval"
-# # 2019-12-03
-# TRAIN_SPLIT="train_aug"
-# EVAL_SPLIT="eval_aug"
+TRAIN_SPLIT="train"
+EVAL_SPLIT="eval"
+VIS_SPLIT="vis"
 MODEL_VAR="xception_65" # network backbone model variant
 # PRETRAINED="PASCAL-COCO"
-PRETRAINED="guitars/trainval 20K"
+PRETRAINED="motive/trainval 40K"
 
-# Set up the working directories.
-GUITAR_FOLDER="guitars"
-# EXP_FOLDER="exp/train_on_trainval_aug_set"
-# EXP_FOLDER="exp/train_on_train_val_aug_set"
+# Set up the working directories and datasets.
+MOTIVE_FOLDER="MoTIVE"
+MOTIVE_DATASET="motive"
+MOTIVE_TFRECORD="${WORK_DIR}/${DATASET_DIR}/${MOTIVE_FOLDER}/tfrecord"
+
 EXP_FOLDER="exp/working_on_${TRAIN_SPLIT}_${EVAL_SPLIT}_${NUM_ITERATIONS}"
-TRAIN_LOGDIR="${WORK_DIR}/${DATASET_DIR}/${GUITAR_FOLDER}/${EXP_FOLDER}/train"
-EXPORT_DIR="${WORK_DIR}/${DATASET_DIR}/${GUITAR_FOLDER}/${EXP_FOLDER}/export"
+TRAIN_LOGDIR="${WORK_DIR}/${DATASET_DIR}/${MOTIVE_FOLDER}/${EXP_FOLDER}/train"
+EVAL_LOGDIR="${WORK_DIR}/${DATASET_DIR}/${MOTIVE_FOLDER}/${EXP_FOLDER}/eval"
+EXPORT_DIR="${WORK_DIR}/${DATASET_DIR}/${MOTIVE_FOLDER}/${EXP_FOLDER}/export"
+VIS_LOGDIR="${WORK_DIR}/${DATASET_DIR}/${MOTIVE_FOLDER}/${EXP_FOLDER}/vis"
 mkdir -p "${TRAIN_LOGDIR}"
+mkdir -p "${EVAL_LOGDIR}"
 mkdir -p "${EXPORT_DIR}"
+mkdir -p "${VIS_LOGDIR}"
 
-#---------------------------------------------------------------------
-# Choose the initial checkpoint:
-# 1) if you start the finetuning from zero, use a model from the list 
-# of provided ones in g3doc/model_zoo.
-# 2) if you fine tune your own model with more iterations, comment
-#    this first option and put the path to the last checkpoint as
-#    your target.
-#---------------------------------------------------------------------
+# #---------------------------------------------------------------------
+# # Choose the initial checkpoint:
+# # 1) if you start the finetuning from zero, use a model from the list 
+# # of provided ones in g3doc/model_zoo.
+# # 2) if you fine tune your own model with more iterations, comment
+# #    this first option and put the path to the last checkpoint as
+# #    your target.
+# #---------------------------------------------------------------------
 # # 1) Copy locally the trained checkpoint as the initial checkpoint.
 # # All our experiments start, at first, with the PASCAL VOC pretrained
 # # network (over xception_65)
-# INIT_FOLDER="${WORK_DIR}/${DATASET_DIR}/${GUITAR_FOLDER}/init_models"
+# INIT_FOLDER="${WORK_DIR}/${DATASET_DIR}/${MOTIVE_FOLDER}/init_models"
 # mkdir -p "${INIT_FOLDER}"
 # TF_INIT_ROOT="http://download.tensorflow.org/models"
 # TF_INIT_CKPT="deeplabv3_pascal_train_aug_2018_01_04.tar.gz"
@@ -130,12 +96,6 @@ mkdir -p "${EXPORT_DIR}"
 # TF_INIT_CKPT="${INIT_FOLDER}/deeplabv3_pascal_train_aug/model.ckpt"
 
 # 2) Indicate the path of your target --> use as recover_train.sh
-# # This does not work properly!!!
-# OLD_NUM_ITER=20000
-# OLD_EXP="exp/working_on_${TRAIN_SPLIT}_${EVAL_SPLIT}_${OLD_NUM_ITER}"
-# INIT_FOLDER="${WORK_DIR}/${DATASET_DIR}/${GUITAR_FOLDER}/${OLD_EXP}/export"
-# TF_INIT_CKPT="${INIT_FOLDER}/model.ckpt-${OLD_NUM_ITER}"
-# INIT_FOLDER="${WORK_DIR}/${DATASET_DIR}/${GUITAR_FOLDER}/${OLD_EXP}/train"
 INIT_FOLDER=${TRAIN_LOGDIR}
 TF_INIT_CKPT="${INIT_FOLDER}/checkpoint"
 
@@ -144,17 +104,14 @@ echo "         remember to import the corresponding checkpoints into this exp fo
 
 cd "${CURRENT_DIR}"
 
-# Path to the input dataset in format tfrecord (be sure that 
-# build_[name]_dataset.py has been launched and info in 
-# data_generator.py are correct)
-GUTIAR_TFRECORD="${WORK_DIR}/${DATASET_DIR}/${GUITAR_FOLDER}/tfrecord"
-
 echo "------------------------"
-echo "Created GUITAR folders: "
-echo "    ${GUITAR_FOLDER}/${EXP_FOLDER}"
+echo "Created MOTIVE folders: "
+echo "    ${MOTIVE_FOLDER}/${EXP_FOLDER}"
 echo "Initial checkpoints:    ${INIT_FOLDER}"
 echo "Log for training:       ${TRAIN_LOGDIR}"
+echo "Log for evaluation:     ${EVAL_LOGDIR}"
 echo "Export results in:      ${EXPORT_DIR}"
+echo "Visualize inference in: ${VIS_LOGDIR}"
 
 #----------------------------------------------------------------------
 # Summary and training.
@@ -163,7 +120,7 @@ echo "Starting training. Options:"
 echo "Model variant: ${MODEL_VAR}"
 echo "Finetuning model from ${PRETRAINED}: ${TF_INIT_CKPT}"
 echo "Iterations: ${NUM_ITERATIONS}"
-echo "Dataset (tfrecord): ${GUTIAR_TFRECORD}"
+echo "Dataset (tfrecord): ${MOTIVE_TFRECORD}"
 echo "Dataset split: ${TRAIN_SPLIT}"
 echo "Num classes of dataset: ${NUM_CLASSES}"
 echo "Batch size: ${BATCH_SIZE}"
@@ -191,23 +148,46 @@ python "${WORK_DIR}"/train.py \
  --training_number_of_steps="${NUM_ITERATIONS}" \
  --tf_initial_checkpoint="${TF_INIT_CKPT}" \
  --train_logdir="${TRAIN_LOGDIR}" \
- --dataset_dir="${GUTIAR_TFRECORD}" \
- --dataset="${GUITAR_FOLDER}" \
+ --dataset_dir="${MOTIVE_TFRECORD}" \
+ --dataset="${MOTIVE_DATASET}" \
  --fine_tune_batch_norm=${FINETUNE_BN} \
  --initialize_last_layer=False \
  --last_layers_contain_logits_only=False
-#  --min_resize_value=${CROP_SIZE} \
-#  --max_resize_value=${CROP_SIZE} \
-# --tf_initial_checkpoint="${INIT_FOLDER}/deeplabv3_pascal_train_aug/model.ckpt" \
 
-#----------------------------------------------------------------------
-# Export the trained checkpoint.
-echo "--------------------------------"
-echo "Export the trained checkpoint..."
+echo "-----------------------------------------------------------"
+echo "Starting evaluation on $(date)"
+# Evaluation images should have fixed size. Put the crop_size as
+# max_size +1 for each dimension. Remeber the sizes must be in 
+# matrix order!! (height, width)
+EVAL_CROP_SIZE="1081, 1441" 
+
+python "${WORK_DIR}"/eval.py \
+--logtostderr \
+--eval_split="${EVAL_SPLIT}" \
+--model_variant="${MODEL_VAR}" \
+--atrous_rates=6 \
+--atrous_rates=12 \
+--atrous_rates=18 \
+--output_stride=16 \
+--decoder_output_stride=4 \
+--eval_crop_size="${EVAL_CROP_SIZE}" \
+--checkpoint_dir="${TRAIN_LOGDIR}" \
+--eval_logdir="${EVAL_LOGDIR}" \
+--dataset_dir="${MOTIVE_TFRECORD}" \
+--max_number_of_evaluations=1 \
+--dataset=${MOTIVE_DATASET} \
+
+echo "----------------------------------------------------------"
 echo "$(date)"
+echo "Evaluation completed. Check miou using:"
+echo "    $ tensorboard --logdir ${EVAL_LOGDIR} --host localhost"
 
+# Export the trained checkpoint.
 CKPT_PATH="${TRAIN_LOGDIR}/model.ckpt-${NUM_ITERATIONS}"
 EXPORT_PATH="${EXPORT_DIR}/frozen_inference_graph.pb"
+
+echo "-------------------------------"
+echo "Exporting trained checkpoint..."
 
 python "${WORK_DIR}"/export_model.py \
   --logtostderr \
@@ -222,11 +202,32 @@ python "${WORK_DIR}"/export_model.py \
   --num_classes=$NUM_CLASSES \
   --crop_size=$CROP_SIZE \
   --crop_size=$CROP_SIZE \
-  --inference_scales=1.0
+  --inference_scales=1.0 \
 
-# Move the final checkpoints in the export directory.
-# cp "${TRAIN_LOGDIR}/model.ckpt-${NUM_ITERATIONS}.*" -t ${EXPORT_DIR}
+# Run inference. Mind the crop size 
+# (follows the same rules as evaluation)
+echo "------------------------------------------"
+echo "Running inference on split ${VIS_SPLIT}..."
+
+EVAL_CROP_SIZE="721, 961" # if using vis
+
+python "${WORK_DIR}"/vis.py \
+  --logtostderr \
+  --vis_split="${VIS_SPLIT}" \
+  --model_variant="${MODEL_VAR}" \
+  --atrous_rates=6 \
+  --atrous_rates=12 \
+  --atrous_rates=18 \
+  --output_stride=16 \
+  --resize_factor=16 \
+  --decoder_output_stride=4 \
+  --vis_crop_size="${EVAL_CROP_SIZE}" \
+  --checkpoint_dir="${TRAIN_LOGDIR}" \
+  --vis_logdir="${VIS_LOGDIR}" \
+  --dataset_dir="${MOTIVE_TFRECORD}" \
+  --dataset="${MOTIVE_DATASET}" \
+  --max_number_of_iterations=1 \
+  --also_save_raw_predictions=True \
 
 echo "-----------------------------------------------------"
-echo "Deeplab completed. Check results running tensorboard:" 
-echo "    $ tensorboard --logdir ${TRAIN_LOGDIR} --host localhost"
+echo "Deeplab completed. Check results running tensorboard!"

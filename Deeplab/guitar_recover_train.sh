@@ -33,7 +33,7 @@ echo "Cuda visible devices = ${CUDA_VISIBLE_DEVICES}"
 echo "(device = 0 : using GeForce; device = 1 : using Quadro)"
 
 # 2019-12-04/07
-NUM_ITERATIONS=80000 # scaling up to 80K
+NUM_ITERATIONS=40000 # scaling up to 80K
 BATCH_SIZE=8
 FINETUNE_BN=False
 CROP_SIZE=513
@@ -113,7 +113,7 @@ python "${WORK_DIR}"/train.py \
  --dataset="${GUITAR_FOLDER}" \
  --fine_tune_batch_norm=${FINETUNE_BN} \
  --initialize_last_layer=False \
- --last_layers_contain_logits_only=False \
+ --last_layers_contain_logits_only=False
 #  --min_resize_value=${CROP_SIZE} \
 #  --max_resize_value=${CROP_SIZE} \
 

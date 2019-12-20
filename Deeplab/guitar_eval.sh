@@ -47,19 +47,14 @@ cd "${CURRENT_DIR}"
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-10.1/lib64
 echo "Loaded CUDA lybrary: ${LD_LIBRARY_PATH}"
 # export CUDA_VISIBLE_DEVICES in order to select which of our GPUs 
-# must be used. It appears that Deeplab does the indexing by calling
-# 0 the internal GPU, while 1 and 2 Pascal and GeForce respectively.
-export CUDA_VISIBLE_DEVICES="1"
+# must be used. 
+export CUDA_VISIBLE_DEVICES="0"
 echo "Cuda visible devices = ${CUDA_VISIBLE_DEVICES}"
 echo "(device = 0 : using GeForce; device = 1 : using Quadro)"
 
 # Set up the splits: dataset on which we are working.
-# 2019-12-11
-TRAIN_SPLIT="trainval"
-EVAL_SPLIT="trainval"
-# # 2019-12-04/10
-# TRAIN_SPLIT="train_aug"
-# EVAL_SPLIT="eval_aug"
+TRAIN_SPLIT="train_aug"
+EVAL_SPLIT="eval_aug"
 MODEL_VARIANT="xception_65"
 # Set the num_iterations correspondent to the model to evaluate.
 NUM_ITERATIONS=80000
@@ -78,10 +73,10 @@ TRAIN_LOGDIR="${WORK_DIR}/${DATASET_DIR}/${GUITAR_FOLDER}/${EXP_FOLDER}/train"
 EVAL_LOGDIR="${WORK_DIR}/${DATASET_DIR}/${GUITAR_FOLDER}/${EXP_FOLDER}/eval"
 mkdir -p "${EVAL_LOGDIR}"
 
-GUITAR_DATASET="${WORK_DIR}/${DATASET_DIR}/${GUITAR_FOLDER}/tfrecord"
+GUTIAR_TFRECORD="${WORK_DIR}/${DATASET_DIR}/${GUITAR_FOLDER}/tfrecord"
 
-# 2019-12-10 evaluating on different split
-EVAL_SPLIT="eval_aug"
+# # Change here if you evaluate on different split (example: trainval)
+# EVAL_SPLIT="eval_aug"
 
 echo "------------------------------"
 echo "Evaluating on GUITAR folders: "
@@ -125,7 +120,7 @@ python "${WORK_DIR}"/eval.py \
  --eval_crop_size="${CROP_H},${CROP_W}" \
  --checkpoint_dir="${TRAIN_LOGDIR}" \
  --eval_logdir="${EVAL_LOGDIR}" \
- --dataset_dir="${GUITAR_DATASET}" \
+ --dataset_dir="${GUTIAR_TFRECORD}" \
  --max_number_of_evaluations=1 \
  --dataset="${GUITAR_FOLDER}" \
 
