@@ -1,5 +1,4 @@
-function prepareIndexedLabels(labInDir, labOutDir, indexMap, adjust)
-% DEPRECATED!!!
+function [] = prepareIndexedLabels2(labInDir, labOutDir, indexMap, adjust)
 % Converts RGB labels into 1 channel, color indexed labels according to the
 % given label map. 
 % Parameters.
@@ -8,7 +7,7 @@ function prepareIndexedLabels(labInDir, labOutDir, indexMap, adjust)
 %                       understanding how each pixel must be interpreted
 %   - adjust:           if a label is not recognized and adjust is true, we
 %                       try to adjust it putting the value of the most
-%                       similar label
+%                       similar label (not implemented yet)
     
     dispPrint('Convert labels index from:');
     fprintf('\t%s\n', labInDir);

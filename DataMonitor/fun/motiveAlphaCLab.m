@@ -12,7 +12,7 @@ function [classes, labIDs, cmap] = eventAlphaCLab ()
 %   'person'    3           80                  204
 
     % classes are instances
-    classes = flip([        
+    classes = [        
         "Instance_1"
         "Instance_2"
         "Instance_3"
@@ -24,7 +24,7 @@ function [classes, labIDs, cmap] = eventAlphaCLab ()
         "Instance_9"
         "Instance_10"
         "Instance_11"
-        ]);
+        ];
     
     % labelIDs are 255-range of the alpha percentage
     labIDs = flip( (0:1:10) * 10);

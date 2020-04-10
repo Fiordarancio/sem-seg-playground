@@ -4,8 +4,6 @@ function labIDs = eventPixelLabelIDs (isColorIndex)
         [0 0 0]        
 %         "Accordion"
         [140 70 170]
-%         "Armchair_Sofa"
-        [200 150 130]
 %         "Bag_Backpack"
         [165 180 130]
 %         "Brass Instruments"

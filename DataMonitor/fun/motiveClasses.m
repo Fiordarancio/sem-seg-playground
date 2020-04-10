@@ -1,9 +1,8 @@
-function classes = eventClasses()
+function classes = motiveClasses()
 % Returns an string array with used classes.
 classes = [
     "Undefined_Background"
     "Accordion"
-    "Armchair_Sofa"
     "Bag_Backpack"
     "BrassInstruments"
     "Cable_Wire"

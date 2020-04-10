@@ -1,4 +1,4 @@
-function [] = createDir(dir)
+function [] = createDir(dir, addPath)
 % If DIR does not exist, creates it
     if ~ischar(dir) && ~isstring(dir) && iscellstr(dir)
         error([mfilename ': Invalid input dir'], ...
@@ -6,5 +6,8 @@ function [] = createDir(dir)
     end
     if ~exist(dir, 'dir')
         mkdir(dir);
+        if addPath
+            addpath(dir);
+        end
     end        
 end
