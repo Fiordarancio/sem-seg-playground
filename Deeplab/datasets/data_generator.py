@@ -54,10 +54,17 @@ The Guitar dataset reorganized for K-fold cross validation. Data are formatted a
 
 6. MoTIVE
 
+DEPRECATED - 2019
 Dataset under contruction into the EventLab (Bcn, Spain). It contains 35 semantic
 labels regarding music concert scenarios, musical instruments and equipment. It 
 is still a very small dataset, used to test the accuracy of the Deeplab with very
 few data and with GAN-based augmentation.
+
+NEW - 2020
+Dataset under contruction into the EventLab (Bcn, Spain). It contains 34 semantic
+labels regarding music concert scenarios, musical instruments and equipment. It 
+includes a label for undefined categories, with value 0. The total number of 
+aumented examples should be 2310 (1848+462), obtained from a set of 100 examples.
 
 References:
   M. Everingham, S. M. A. Eslami, L. V. Gool, C. K. I. Williams, J. Winn,
@@ -157,12 +164,14 @@ _GUITARFOLD_INFORMATION = DatasetDescriptor(
 
 _MOTIVE_INFORMATION = DatasetDescriptor(
   splits_to_sizes={
-    'train' : 42,   # training is 80%
-    'eval'  : 10,   # eval is 20%
-    'vis'   : 768,  # for now it is the same of the guitar one
+    # 'train'     : 80,   # by now these are all that we have
+    # 'eval'      : 27,   # eval is a special set of crops with homogeneous size
+    'train_aug' : 1848, # of 2310
+    'eval_aug'  : 462,
+    'vis'       : 768,  # for now it is the same of the guitar one
   },
-  num_classes=35,
-  ignore_label=0,  
+  num_classes=34,
+  ignore_label=0,   # 255 to consider Background as a class!
 )
 
 _DATASETS_INFORMATION = {
