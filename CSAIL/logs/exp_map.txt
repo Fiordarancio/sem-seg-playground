@@ -1,0 +1,12 @@
+Logs contain configuration infos. Check there for details.
+
+GUITAR
+Experiment# Batch Iterations  Epochs  Pret
+01          2     150K        30      ade
+02          4     80K         16      ade
+03          4     20K         4       ade
+04          4     40K         8       ade
+
+MOTIVE
+Experiment# Batch Iterations  Epochs  Pret
+01          2     20K         4       ade
