@@ -1,0 +1,11 @@
+numpy==1.14.5
+pillow
+matplotlib
+jupyter
+six==1.12
+testresources
+tensorflow==1.14.rc0
+tensorflow-gpu==1.14.rc0
+tensorboard==1.13
+tb-nightly
+PrettyTable

@@ -27,7 +27,7 @@
 # strings should change into the file, so be careful in avoiding overwritings.
 #-------------------------------------------------------------------------------
 
-echo "DEEPLABv3+ experiment launched on $(date)"
+echo "DEEPLABv3+ training experiment launched on $(date)"
 
 # Exit immediately if a command exits with a non-zero status.
 set -e
@@ -53,19 +53,18 @@ cd "${CURRENT_DIR}"
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-10.1/lib64
 echo "Loaded CUDA lybrary: ${LD_LIBRARY_PATH}"
 # export CUDA_VISIBLE_DEVICES in order to select which of our GPUs 
-# must be used. It appears that Deeplab does the indexing by calling
-# 0 the internal GPU, while 1 and 2 Pascal and GeForce respectively.
-export CUDA_VISIBLE_DEVICES="1"
+# must be used. It appears to read the indexed opposite than nvidia-smi
+export CUDA_VISIBLE_DEVICES="0,3"
 echo "Cuda visible devices = ${CUDA_VISIBLE_DEVICES}"
-echo "(device = 0 : using GeForce; device = 1 : using Quadro)"
 
 # Train iterations: steps of training. Epochs can be extracted this way
 # steps_needed_to_traverse_dataset = dataset_size / batch_size
 # epochs = num_iterations / steps_needed_to_traverse_dataset
 
 # 2019-12-03/04 = 2019-12-07
-NUM_ITERATIONS=40000 # scaling up to 80K
-BATCH_SIZE=8
+# NUM_ITERATIONS=40000 # scaling up to 80K
+NUM_ITERATIONS=40000
+BATCH_SIZE=8 # maximum for 1 GPU only is 8
 FINETUNE_BN=False
 CROP_SIZE=513
 NUM_CLASSES=2
@@ -89,15 +88,15 @@ NUM_CLASSES=2
 #---------------------------------------------------------------------------
 
 # Set the splits: dataset on which we are working.
-# 2019-12-07
-TRAIN_SPLIT="trainval"
-EVAL_SPLIT="trainval"
-# # 2019-12-03
-# TRAIN_SPLIT="train_aug"
-# EVAL_SPLIT="eval_aug"
+# # 2019-12-07
+# TRAIN_SPLIT="trainval"
+# EVAL_SPLIT="trainval"
+# 2019-12-03
+TRAIN_SPLIT="train_aug"
+EVAL_SPLIT="eval_aug"
 MODEL_VAR="xception_65" # network backbone model variant
 # PRETRAINED="PASCAL-COCO"
-PRETRAINED="guitars/trainval 20K"
+PRETRAINED="${DATASET} ${TRAIN_SPLIT} ${NUM_ITERATIONS}"
 
 # Set up the working directories.
 GUITAR_FOLDER="guitars"
@@ -117,27 +116,21 @@ mkdir -p "${EXPORT_DIR}"
 #    this first option and put the path to the last checkpoint as
 #    your target.
 #---------------------------------------------------------------------
-# # 1) Copy locally the trained checkpoint as the initial checkpoint.
-# # All our experiments start, at first, with the PASCAL VOC pretrained
-# # network (over xception_65)
-# INIT_FOLDER="${WORK_DIR}/${DATASET_DIR}/${GUITAR_FOLDER}/init_models"
-# mkdir -p "${INIT_FOLDER}"
-# TF_INIT_ROOT="http://download.tensorflow.org/models"
-# TF_INIT_CKPT="deeplabv3_pascal_train_aug_2018_01_04.tar.gz"
-# cd "${INIT_FOLDER}"
-# wget -nd -c "${TF_INIT_ROOT}/${TF_INIT_CKPT}"
-# tar -xf "${TF_INIT_CKPT}"
-# TF_INIT_CKPT="${INIT_FOLDER}/deeplabv3_pascal_train_aug/model.ckpt"
+# 1) Copy locally the trained checkpoint as the initial checkpoint.
+# All our experiments start, at first, with the PASCAL VOC pretrained
+# network (over xception_65)
+INIT_FOLDER="${WORK_DIR}/${DATASET_DIR}/${GUITAR_FOLDER}/init_models"
+mkdir -p "${INIT_FOLDER}"
+TF_INIT_ROOT="http://download.tensorflow.org/models"
+TF_INIT_CKPT="deeplabv3_pascal_train_aug_2018_01_04.tar.gz"
+cd "${INIT_FOLDER}"
+wget -nd -c "${TF_INIT_ROOT}/${TF_INIT_CKPT}"
+tar -xf "${TF_INIT_CKPT}"
+TF_INIT_CKPT="${INIT_FOLDER}/deeplabv3_pascal_train_aug/model.ckpt"
 
-# 2) Indicate the path of your target --> use as recover_train.sh
-# # This does not work properly!!!
-# OLD_NUM_ITER=20000
-# OLD_EXP="exp/working_on_${TRAIN_SPLIT}_${EVAL_SPLIT}_${OLD_NUM_ITER}"
-# INIT_FOLDER="${WORK_DIR}/${DATASET_DIR}/${GUITAR_FOLDER}/${OLD_EXP}/export"
-# TF_INIT_CKPT="${INIT_FOLDER}/model.ckpt-${OLD_NUM_ITER}"
-# INIT_FOLDER="${WORK_DIR}/${DATASET_DIR}/${GUITAR_FOLDER}/${OLD_EXP}/train"
-INIT_FOLDER=${TRAIN_LOGDIR}
-TF_INIT_CKPT="${INIT_FOLDER}/checkpoint"
+# # 2) Indicate the path of your target --> use as recover_train.sh
+# INIT_FOLDER=${TRAIN_LOGDIR}
+# TF_INIT_CKPT="${INIT_FOLDER}/checkpoint"
 
 echo "WARNING: If you want to finetune a previously trained model up to more iterations,"
 echo "         remember to import the corresponding checkpoints into this exp folder."
@@ -200,11 +193,12 @@ python "${WORK_DIR}"/train.py \
 #  --max_resize_value=${CROP_SIZE} \
 # --tf_initial_checkpoint="${INIT_FOLDER}/deeplabv3_pascal_train_aug/model.ckpt" \
 
+echo "End time: $(date)"
+
 #----------------------------------------------------------------------
 # Export the trained checkpoint.
 echo "--------------------------------"
 echo "Export the trained checkpoint..."
-echo "$(date)"
 
 CKPT_PATH="${TRAIN_LOGDIR}/model.ckpt-${NUM_ITERATIONS}"
 EXPORT_PATH="${EXPORT_DIR}/frozen_inference_graph.pb"

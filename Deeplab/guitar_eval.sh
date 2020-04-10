@@ -16,7 +16,7 @@
 
 # This script is used to evaluate the results of the training done on the
 # Guitar dataset. Note that flags passed to eval.py MUST MATCH the ones 
-# used in the training we are interested in analyzing
+# used in the training whose analysis we are interested in.
 #
 # Usage:
 #		# From the tensorflow/models/research/deeplab directory.
@@ -47,17 +47,16 @@ cd "${CURRENT_DIR}"
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-10.1/lib64
 echo "Loaded CUDA lybrary: ${LD_LIBRARY_PATH}"
 # export CUDA_VISIBLE_DEVICES in order to select which of our GPUs 
-# must be used. 
-export CUDA_VISIBLE_DEVICES="0"
+# must be used. Consider reverse order than nvidia-smi.
+export CUDA_VISIBLE_DEVICES="3"
 echo "Cuda visible devices = ${CUDA_VISIBLE_DEVICES}"
-echo "(device = 0 : using GeForce; device = 1 : using Quadro)"
 
 # Set up the splits: dataset on which we are working.
 TRAIN_SPLIT="train_aug"
 EVAL_SPLIT="eval_aug"
 MODEL_VARIANT="xception_65"
 # Set the num_iterations correspondent to the model to evaluate.
-NUM_ITERATIONS=80000
+NUM_ITERATIONS=40000
 # Crop sizes to be used in evaluation. You need whole-image inference, so
 # brute force value is [max_width, max_height] + 1; suggested value is 
 # output_stride * 2^k + 1. See DEBUG NOTES below for further details.
@@ -125,5 +124,6 @@ python "${WORK_DIR}"/eval.py \
  --dataset="${GUITAR_FOLDER}" \
 
 echo "---------------------------------------------------------"
-echo "Evaluation completed. Check miou using:"
+echo "Evaluation completed on $(date)"
+echo "Check miou using:"
 echo "    $ tensorboard --logdir ${EVAL_LOGDIR} --host localhost"
