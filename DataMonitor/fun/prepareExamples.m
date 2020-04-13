@@ -1,26 +1,18 @@
-function [] = prepareExamples(imgDirs, labDirs, templatesDir, flags, padOptions, cmap)
+function [] = prepareExamples(imgDirs, labDirs, flags, varargin) % padOptions, templatesDir, cmap)
 % FUTURE VERSION: add varargin{:}
 % imgDirs:      input and output directories for images
 % labDirs:      input and output directories for labels
-% templateDir:  path to templates for color standardization
 % flags:        required flags to apply augmentations are 
 %               1) PADDING & CROPPING
 %               2) RESIZING
 %               3) COLOR STANDARDIZATION
 %               4) CONVERSION OF LABELS TO COLOR INDEXES
-% padOptions:   cell array for the Padding & Crop function 
+% VARARGIN
+% padOptions:   cell array for the Padding & Crop function (see
+%               preparePaddingDataset function)
+% templateDir:  path to templates for color standardization
 % cmap          RGB cmap to transform each color into an index
-    narginchk(2,6); 
-    % check flag validity
-    if nargin < 4 || numel(flags) ~= 4
-        disp ('Invalid number of flags. Must be 4.');
-        disp ('Type help for more information');
-        return;
-    end
-    applyPadNCrop = flags(1);
-    applyResizing = flags(2);
-    applyColorStd = flags(3);
-    applyColorIdx = flags(4);
+    narginchk(2,6);
     % check folder validity
     if numel(imgDirs) ~= 2 || numel(labDirs) ~= 2
         disp('Invalid directories: must have input and output directories for images and labels.');
@@ -31,7 +23,18 @@ function [] = prepareExamples(imgDirs, labDirs, templatesDir, flags, padOptions,
     imgOutDir = imgDirs{2};
     labInDir = labDirs{1};
     labOutDir = labDirs{2};
+    % check flag validity
+    if nargin < 4 || numel(flags) ~= 4
+        disp ('Invalid number of flags. Must be 4.');
+        disp ('Type help for more information');
+        return;
+    end
+    applyPadNCrop = flags(1);
+    applyResizing = flags(2);
+    applyColorStd = flags(3);
+    applyColorIdx = flags(4);
     % check options validity
+    padOptions = varargin{1};
     if applyPadNCrop
         if numel(padOptions) ~= 7
             disp('Invalid options for Pad&Crop method. Must be:');
@@ -50,9 +53,19 @@ function [] = prepareExamples(imgDirs, labDirs, templatesDir, flags, padOptions,
             percError = padOptions{6};
             stride =    padOptions{7};
     end
+    % check templates dir validity
+    templatesDir = varargin{2};
+    if applyColorStd 
+        if ~exist(templatesDir, 'dir')
+            disp('Invalid directory for templates.');
+            return;
+        end
+    end
     % check cmap validity
+    cmap = varargin{3};
     if applyColorIdx
-        if nargin < 6 || size(cmap, 2) ~= 3
+%         if nargin < 6 || size(cmap, 2) ~= 3
+        if size(cmap, 2) ~= 3
             disp('Invalid cmap for color index. Must be a m-by-3 matrix');
             return;
         end
@@ -86,7 +99,7 @@ function [] = prepareExamples(imgDirs, labDirs, templatesDir, flags, padOptions,
         disp(['Images saved at: ' imgInDir]);
         disp(['Labels saved at: ' labInDir]);
     end
-
+    % resizing
     if applyResizing
         dispPrint('Applying resizing to dataset...');
         if applyColorStd || applyColorIdx
@@ -117,7 +130,7 @@ function [] = prepareExamples(imgDirs, labDirs, templatesDir, flags, padOptions,
         disp(['Images saved at: ' imgInDir]);
         disp(['Labels saved at: ' labInDir]);
     end
-
+    % color standardization
     if applyColorStd
         dispPrint('Applying color standardization to dataset...');
         if applyColorIdx
@@ -147,7 +160,7 @@ function [] = prepareExamples(imgDirs, labDirs, templatesDir, flags, padOptions,
         disp(['Images saved at: ' imgInDir]);
         disp(['Labels saved at: ' labInDir]);
     end
-
+    % color indexing
     if applyColorIdx
         dispPrint('Adapting labels to color indexing...');    
         prepareIndexedLabels(imgInDir, imgOutDir, labInDir, labOutDir, ...
@@ -158,7 +171,7 @@ function [] = prepareExamples(imgDirs, labDirs, templatesDir, flags, padOptions,
             rmdir(labInDir, 's');
         end
     end
-
+    %----------------------------------------------------- END PROCESSING
     dispPrint(['Final dataset has now ' num2str(numel(dir(imgOutDir))-2) ...
         ' augmented elements']);
     disp(['Images saved at: ' imgOutDir]);
