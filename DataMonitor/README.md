@@ -15,18 +15,7 @@ Implemented network backbones are:
 * [DeepLabV3+](https://arxiv.org/pdf/1802.02611.pdf), built over ResNet-18
 * [SegNet](https://arxiv.org/pdf/1511.00561.pdf)
 
-## Table of contents
-1. <a href=`Requirements`>Requirements</a> 
-2. <a href=`Resources`>Resources</a>
-3. Prepare the dataset
-  3.1. <a href=`Requirements`>Requirements</a>
-  3.2. <a href=`Build your dataset`>Build your dataset</a>
-4. Use a pretrained network
-  4.1. <a href=`Description`>Description</a>
-  4.2. <a href=`How to`>How to</a>
-5. <a href=`Train again the a network`>Train again the a network</a>
-
-## Requirements
+## 1. Requirements
 
 This project has been developed using MATLAB 2019b. Compatibility with
 previous versions of the software is not granted.
@@ -40,7 +29,7 @@ Sources may require the following packages installed:
 * Optimization Toolbox
 * Parallel Computing Toolbox
 
-## Resources
+## 2. Resources
 
 Available folders are arranged in this way
 ```
@@ -96,7 +85,7 @@ In general, snippets that can be modified by the user for plug & play
 purposes are marked with line separations and BEGIN USER CODE - END USER
 CODE labels. We hope this would make interactions easier.
 
-### MoTIVE Dataset
+### 2.1 MoTIVE Dataset
 
 *Section to be updated*
 
@@ -114,8 +103,8 @@ tool to visually inspect if the labels are correct or not, and to act
 over it. The script scrolls the images showing the categories and the
 instances separately, and also saves them in different folders.
 
-## Prepare the dataset
-### Requirements
+## 3. Prepare the dataset
+### 3.1 Requirements
 Both DeepLabV3 and SegnNet require images and labels that mandatorily fit
 the size (and aspect ratio as consequence) expected by their input layer. 
 ```
@@ -135,7 +124,7 @@ labels by having the same name (file extension may differ). Name matching
 is not mandatory and does not strictly generate errors; however, of 
 course, this will generate wrong associations and bad performaces
 
-### Build your dataset
+### 3.2 Build your dataset
 Into the `dataset` folder, copy your images and put them in a new
 directory of custom name. Copy your labels as well (if needed for a new 
 training) using the same procedure: divide files into `images` and
@@ -170,8 +159,8 @@ Example:  we want to add myPersonalDataset to the overall dataset; then,
 
 If you just want to use `myPersonalDataset` only, just skip steps 4. and 5.
 
-## Use a pretrained network
-### Description
+## 4. Use a pretrained network
+### 4.1 Description
 The folder `guitarResults` contains workspaces and log data which follow
 this terminology:
 ```bash
@@ -183,7 +172,7 @@ and also test cases (`net` variable), together with accuracy evaluations.
 Figures follow a similar nomenclature: the ones which last with `_tp` 
 illustrate the training process plot of the relative training.
 
-### How to
+### 4.2 How to
 1. import your dataset as explained in chapter 3.2.
 2. load the desired workspace from `guitarResults`
 3. update paths into `pathSetup.m` with the name of the folders in which
@@ -191,7 +180,7 @@ illustrate the training process plot of the relative training.
 	`imagesDeeplab` and `labelsDeeplab`, and the same for Segnet)
 4. launch `Guitar_test_deeplab.m` or `Guitar_test_segnet.m`
 
-### Train again your network
+### 4.3 Train again your network
 
 If you want to build up your network from the present templates, you have
 to go deeper in the update of `Guitar_deeplab.m` and `Guitar_segnet.m`.
