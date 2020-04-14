@@ -1,4 +1,4 @@
-function [ norm ] = colorTransfer(imageRGB, targetRGB, verbose)
+function reinhard = colorTransfer(imageRGB, targetRGB, verbose)
 % Transform a source image w.r.t. a target image according to Reinhard's 
 % Color Transfer method.
 % Parameters:
@@ -28,19 +28,19 @@ function [ norm ] = colorTransfer(imageRGB, targetRGB, verbose)
     stdt = std(reshape(targetLab, [], 3));
     
     % normalise each channel based on statistics of source and target images
-    norm(:,:,1) = ((imageLab(:,:,1)-mi(1))*(stdt(1)/stdi(1)))+mt(1);
-    norm(:,:,2) = ((imageLab(:,:,2)-mi(2))*(stdt(2)/stdi(2)))+mt(2);
-    norm(:,:,3) = ((imageLab(:,:,3)-mi(3))*(stdt(3)/stdi(3)))+mt(3);
+    reinhard(:,:,1) = ((imageLab(:,:,1)-mi(1))*(stdt(1)/stdi(1)))+mt(1);
+    reinhard(:,:,2) = ((imageLab(:,:,2)-mi(2))*(stdt(2)/stdi(2)))+mt(2);
+    reinhard(:,:,3) = ((imageLab(:,:,3)-mi(3))*(stdt(3)/stdi(3)))+mt(3);
 
     % convert again from LAB to RGB 
-    norm = applycform(norm, makecform('lab2srgb'));
+    reinhard = applycform(reinhard, makecform('lab2srgb'));
 
     % Display results if verbose mode is true
     if verbose
         figure;
         subplot(1,3,1); imshow(imageRGB);   title('Source Image');
         subplot(1,3,2); imshow(targetRGB);   title('Target Image');
-        subplot(1,3,3); imshow(norm); title('Normalised (Reinhard)');
+        subplot(1,3,3); imshow(reinhard); title('Normalised (Reinhard)');
     end
 
 end
