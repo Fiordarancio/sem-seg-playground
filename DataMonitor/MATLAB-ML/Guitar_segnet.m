@@ -24,7 +24,16 @@
 % ---------------------------------------------------- CURRENT LIB VERSION
 % 1.1.2
 
-clear; clc;
+clear; close all; clc;
+
+% begin logging
+t = datetime();
+t.Format = 'yyyy-MM-dd_HH-mm-ss';
+netName = 'segnet_finetuned';
+diaryname = [netName '_' char(t) '_diary.txt'];
+diary (diaryname);
+diary on
+
 % please update pathSetup.m with the correct folder names!
 pathSetup;
 
@@ -70,10 +79,10 @@ classes = [
 % get IDs to be recognized on the label: since we are working with RGB data
 % we expect labels to be RGB triplets (we can modify the labels with a
 % proper function as we are doing here
-labelIDs = guitarPixelLabelIDs(false);
+labelIDs = guitarPixelLabelIDs(true);
 
-% check label correctness
-if ~checkImageCorrectness(labDir, 'png', width, height, channels)
+% check label correctness (channels is 1)
+if ~checkImageCorrectness(labDir, 'png', width, height, 1)
     disp('Check your labels: they have not the same properties');
     return;
 else
@@ -175,12 +184,12 @@ lgraph = removeLayers(lgraph, ["outputLabels", "softmax", ...
     "decoder1_relu_1", "decoder1_bn_1",  "decoder1_conv1"]);
 lgraph = addLayers(lgraph, layerTunable);
 lgraph = connectLayers(lgraph, 'decoder1_relu_2', 'decoder1_conv1_tunable');
-% analyzeNetwork(lgraph);
+analyzeNetwork(lgraph);
 
 % prepare validation sets and parameters for training options
 pximdsVal = pixelLabelImageDatastore(imdsVal, pxdsVal); % validation data (not augmented)
-miniBatchSize = 16; % outOfMemory error if 32
-maxEpochs = 100;
+miniBatchSize = 8; % outOfMemory error if 32
+maxEpochs = 50;
 learnRate = 5e-3;
 learnRateDropPeriod = 5; 
 valPatience = 10;
@@ -190,6 +199,9 @@ valFrequency = floor(numel(imdsVal.Files)/miniBatchSize);
 % Momentum (SGDM) - the same I implemented for my Pitcher - and we assign
 % it using trainingOptions, specifying the hyperparameters it needs.
 % NOTE: as long as we don't train, this is optional
+
+% april 2020: adding training on multiple gpus
+
 options = trainingOptions('sgdm', ... % next line (needed because else a neal new row is initiated)
     'LearnRateSchedule', 'piecewise', ...   % modify learning rate:
     'LearnRateDropPeriod', learnRateDropPeriod, ... % every 10 epochs...   
@@ -201,12 +213,13 @@ options = trainingOptions('sgdm', ... % next line (needed because else a neal ne
     'MaxEpochs', maxEpochs, ...             % very few epochs needed: it's just a fine tuning
     'MiniBatchSize', miniBatchSize, ...
     'Shuffle', 'every-epoch', ...
-    'ExecutionEnvironment', 'gpu', ...      % our GPU is only one 
+    'ExecutionEnvironment', 'gpu', ...  % our GPU is only one
     'CheckpointPath', guitarCpDir, ...     % resume from log data is training somwhy interrupts (make sure there is enough space to do that!)            
     'Verbose', true, ...
     'VerboseFrequency', 10, ...              
     'Plots', 'training-progress', ...       % after the training, a GUI of the plots of accuracy and loss will be displayed
     'ValidationPatience', valPatience)      % stop if validation accuracy converges (early stopping)
+% 'WorkerLoad', [1 0 0 1], ... DOES NOT WORK, damnit
 
 % data augmentation on training images
 augmenter = imageDataAugmenter( ...
@@ -215,20 +228,29 @@ augmenter = imageDataAugmenter( ...
     'RandRotation', [-45, 45], 'RandScale', [0.5, 2], ...
     'RandXShear', [-30, 30]); 
 
-% ---------------------------------------- START TRAINING (OR FINE-TUNING)
+%% ---------------------------------------- START TRAINING (OR FINE-TUNING)
 % a final call to pixelImageDataStore will mix all together what we created
 % with original examples and data augmentation
 pximds = pixelLabelImageDatastore(imdsTrain, pxdsTrain, ...
     'DataAugmentation', augmenter);
-if input('Start fine-tuning? [y/n] ', 's') == 'y' % we are using pretrained values
+% if input('Start fine-tuning? [y/n] ', 's') == 'y' % we are using pretrained values
     doTraining = true;
-else
-    doTraining = false;
-end
+% else
+%     doTraining = false;
+% end
 
 if doTraining
     disp('Fine tuning started...');
-    [net, info] = trainNetwork(pximds, lgraph, options);
+    % set parallel workers on Pascal and Titan
+    train_start_time = datetime();
+%     gpuIndexes = [1,4];
+%     parpool('local', numel(gpuIndexes));
+%     spmd
+%         gpuDevice(gpuIndexes(labindex));
+%     end
+    gpuDevice(1);
+    [net, info] = trainNetwork(pximds, lgraph, options); 
+    train_end_time = datetime();
 %     [net, info] = trainNetwork(pximds, bkp_lgraph, options);
 else
     disp('Loading pretrained network...');
@@ -287,3 +309,5 @@ filename = fullfile(guitarResDir, filename);
 disp('Saving workspace...');
 save(filename);
 
+% end logging
+diary off
