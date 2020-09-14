@@ -13,7 +13,7 @@ very important to ensure the correctness and coherence of the labels. In order
 to help this, we publish a MATLAB based toolkit called [DataMonitor]()
 which provides a number of interactive scripts for manual management of a given dataset.
 
-The other projects listed refer to some State-Of-The-Art (SOTA) methods about 
+The other projects listed refer to some state-of-the-art methods about 
 the task of semantic segmentation, applied to many datasets 
 (including [PASCAL VOC 2012](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/),
 [ADE20K](https://groups.csail.mit.edu/vision/datasets/ADE20K/),
