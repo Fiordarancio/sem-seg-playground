@@ -1,1 +1,2 @@
-Scripts and results of MATLAB. Document all. GO!
+Scripts and results of MATLAB. TODO documentation
+
