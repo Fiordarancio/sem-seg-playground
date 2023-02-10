@@ -1,3 +1,8 @@
+### Security alert
+On February 10, 2023 a severe vulnerability was found in Tensorflow libraries which we use in this project. 
+The Tensorflow version used here dates back to 2019, so must be considered unusuble without strong
+reengineering of the whole project. 
+
 # A semantic segmentation playground
 
 This workspace collects a personal bunch of interesting projects 
